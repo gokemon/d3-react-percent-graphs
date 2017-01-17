@@ -1,0 +1,35 @@
+@import url(https://fonts.googleapis.com/css?family=Indie+Flower);
+
+html, body, #app {
+    height: 100%;
+    background-color: #0facaa;
+    font-family: 'Indie Flower', cursive;
+    color: black;
+}
+
+#app {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.summary {
+    width: 1020px;
+    display: flex;
+    flex-direction: row;
+    flex-shrink: 0;
+    justify-content: space-between;
+    margin: 10px;
+}
+
+.summary--tiles--value {
+    font-size: 25px;
+    fill: #707173
+}
+
+.summary--tiles--label {
+    text-align: center;
+    font-size: 15px;
+    fill: #BA6A5D;
+}

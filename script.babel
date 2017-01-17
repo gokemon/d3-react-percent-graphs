@@ -1,0 +1,165 @@
+const data = {
+  "Quick": Math.random(),
+  "Brown": Math.random(),
+  "Fox": Math.random(),
+  "Jumps": Math.random(),
+  "Dog": Math.random()
+}
+
+class ProgressArc extends React.Component {
+    componentDidMount() {
+        this.addArc();
+        this.addArc().remove();
+        this.addArc()
+            .transition()
+            .duration(750)
+            .call(this.arcTween, (2 * Math.PI) * this.props.data.value, this.arc());
+    }
+
+    getSVG = () => {
+        return (
+            d3.select(`#${this.props.arcID}`).select('g')
+        )
+    };
+
+    arc = () => {
+        let {width, height, pathStyle} = this.props;
+        let radius = Math.min(width, height) / 2;
+        return (
+            d3.arc()
+                .innerRadius(radius - pathStyle.width)
+                .outerRadius(radius)
+                .startAngle(0)
+        )
+    };
+
+    addArc = () => {
+        let {pathStyle} = this.props;
+        return (
+            this.getSVG().append("path")
+                .datum({endAngle: 0})
+                .style("fill", pathStyle.fill)
+                .attr("d", this.arc())
+        )
+    };
+
+    arcTween = (transition, newAngle, arc) => {
+        transition.attrTween('d', (d) => {
+            const interpolate = d3.interpolate(d.endAngle, newAngle);
+            const newArc = d;
+            return (t) => {
+                newArc.endAngle = interpolate(t);
+                return arc(newArc);
+            };
+        });
+    };
+
+    render() {
+        let {width, height, arcID, data} = this.props;
+        return (
+            <svg id={arcID} height={width} width={height}>
+                <g transform={`translate(${width / 2},${height / 2})`}>
+                </g>
+                <g transform={`translate(${width / 2},${height / 2})`}>
+                    <text style={{
+                        textAnchor: 'middle'
+                    }}>
+                        <tspan x="0" dy="0" className={this.props.valueClass}>
+                            {(data.value * 100).toFixed(2) + '%'}
+                        </tspan>
+                        <tspan x="0" dy="20" className={this.props.labelClass}>
+                            {data.text}
+                        </tspan>
+                    </text>
+                </g>
+            </svg>
+        )
+    }
+};
+
+class Tile extends React.Component {
+    getStyles = () => {
+        return {
+            tile: {
+                width: 500,
+                height: 250,
+                display: 'flex',
+                flexDirection: 'column',
+                backgroundColor: '#ffffff',
+                boxShadow: '0 0 5px rgba(25, 25, 25, 0.25)'
+            },
+            title: {
+                borderBottom: '1px solid #D5DCE4',
+                width: '100%',
+                height: 30,
+                display: 'flex',
+                justifyContent: 'flex-start',
+                alignItems: 'center'
+            },
+            text: {
+                fontSize: '1em',
+                marginLeft: 20
+            }
+        }
+    };
+
+    render() {
+        const styles = this.getStyles();
+        return (
+            <div className={this.props.outerClass} style={Object.assign({}, styles.tile, this.props.tileStyle)}>
+                {this.props.content}
+            </div>
+        )
+    }
+}
+
+class Results extends React.Component {
+  render() {
+    return (
+    <div className="summary">
+        {_.map(data, (value, key) => {
+          let percentage;
+          if (value > 1) {
+            percentage = 1
+          } else if (value < 0) {
+            percentage = 0
+          } else {
+            percentage = value
+          }
+          return (
+            <Tile
+              key={key}
+              tileStyle={{
+              width: 180,
+              height: 180,
+              flexShrink: 0,
+              borderRadius: '50%',
+              alignItems: 'center',
+              justifyContent: 'center'
+              }}
+              content={
+                <ProgressArc
+                  data={{
+                    value: percentage,
+                      text: key
+                  }}
+                  arcID={`test--svg--${key}`}
+                  height={140}
+                  width={140}
+                  pathStyle={{
+                    width: 10,
+                      fill: '#BA6A5D'
+
+                  }}
+                  valueClass={'summary--tiles--value'}
+                  labelClass={'summary--tiles--label'}
+                  />
+              }
+              />
+          )
+        })}
+      </div>
+  )}
+};
+
+ReactDOM.render(<Results />, document.getElementById('app'));
